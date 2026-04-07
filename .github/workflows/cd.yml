@@ -2,30 +2,28 @@ name: Continuous Deployment
 
 on:
   push:
-    branches: [main] 
+    branches: [main]  
 
 jobs:
   deploy:
-    runs-on: self-hosted 
+    runs-on: self-hosted  
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create Environment File
-        run: |
-          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" > .env
-          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env
-          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
-          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-          echo "JWT_KEY=${{ secrets.JWT_KEY }}" >> .env
-          echo "JWT_ISSUER=${{ secrets.JWT_ISSUER }}" >> .env
-          echo "JWT_AUDIENCE=${{ secrets.JWT_AUDIENCE }}" >> .env
-          echo "JWT_EXPIRATION_MINUTES=${{ secrets.JWT_EXPIRATION_MINUTES }}" >> .env
-          echo "✅ .env файл создан для деплоя"
 
-      - name: Deploy application
+      - name: Run Docker Compose
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+          JWT_EXPIRATION_MINUTES: ${{ secrets.JWT_EXPIRATION_MINUTES }}
         run: |
           echo "🔄 Останавливаем старые контейнеры..."
           docker compose down
@@ -47,4 +45,4 @@ jobs:
           docker compose ps
           
           echo "🌐 Проверяем ответ от API..."
-          curl -f http://localhost:8080/health || echo "⚠️ Health check не ответил (возможно, нет такого эндпоинта)"
+          curl -f http://localhost:8080/health || echo "⚠️ Health check не ответил"
